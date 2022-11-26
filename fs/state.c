@@ -14,6 +14,8 @@
  */
 static tfs_params fs_params;
 
+//test
+
 // Inode table
 static inode_t *inode_table;
 static allocation_state_t *freeinode_ts;
