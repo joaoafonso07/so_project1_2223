@@ -251,26 +251,26 @@ int tfs_copy_from_external_fs(char const *source_path, char const *dest_path) {
 
     /* open the source file*/
     FILE *source = fopen(source_path, "r");
-    if (source == NULL){
+    if (source == NULL){ // open fail
         fprintf(stderr, "open error: %s\n", strerror(errno));
         return -1;
     }
 
     /* open the dest file*/
     int dest = tfs_open(dest_path, TFS_O_CREAT);
-    if (dest == -1){
+    if (dest == -1){// open fail
     fprintf(stderr, "open error: %s\n", strerror(errno));
     return -1;
     }
 
 
     char buffer[128];
-    memset(buffer, 0, sizeof(buffer));
+    memset(buffer, 0, sizeof(buffer)); // set all the buffer index to 0
 
     /*read the content of the source file and writes it in the dest file*/
     while(true){ //Tests if the end-of-file indicator have reached the EOF
         size_t bytes_read = fread(buffer, sizeof(char), sizeof(buffer), source);
-        if (bytes_read){//successfull reading
+        if (bytes_read){//fread success
             ssize_t bytes_written = tfs_write(dest, buffer, sizeof(buffer));
             if (bytes_written == -1) {
                 fprintf(stderr, "write error: %s\n", strerror(errno));
@@ -279,13 +279,13 @@ int tfs_copy_from_external_fs(char const *source_path, char const *dest_path) {
 
             memset(buffer, 0, sizeof(buffer));
         }
-        else{//fread failed
+        else{// fread failed
             if (ferror(source)) {
                 fprintf(stderr, "read error: %s\n", strerror(errno));
                 return -1;
-                break; //don't know if it is necessary
+                break; // don't know if it is necessary
             }
-            else if (feof(source))
+            else if (feof(source)) // reached the end of the file (EOF)
                 break;
         } 
     }
@@ -294,4 +294,6 @@ int tfs_copy_from_external_fs(char const *source_path, char const *dest_path) {
     tfs_close(dest);
     return 0;
     //PANIC("TODO: tfs_copy_from_external_fs");
+    /*^ before I removed the line (296) it was not compiling therefore I suppose it must be removed 
+    (I also think that this is what the comment in the beginning of this function suggests )*/
 }
