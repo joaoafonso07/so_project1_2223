@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <errno.h>
+
 #include "betterassert.h"
 
 tfs_params tfs_default_params() {
@@ -247,5 +249,49 @@ int tfs_copy_from_external_fs(char const *source_path, char const *dest_path) {
     // ^ this is a trick to keep the compiler from complaining about unused
     // variables. TODO: remove
 
-    PANIC("TODO: tfs_copy_from_external_fs");
+    /* open the source file*/
+    FILE *source = fopen(source_path, "r");
+    if (source == NULL){
+        fprintf(stderr, "open error: %s\n", strerror(errno));
+        return -1;
+    }
+
+    /* open the dest file*/
+    int dest = tfs_open(dest_path, TFS_O_CREAT);
+    if (dest == -1){
+    fprintf(stderr, "open error: %s\n", strerror(errno));
+    return -1;
+    }
+
+
+    char buffer[128];
+    memset(buffer, 0, sizeof(buffer));
+
+    /*read the content of the source file and writes it in the dest file*/
+    while(true){ //Tests if the end-of-file indicator have reached the EOF
+        size_t bytes_read = fread(buffer, sizeof(char), sizeof(buffer), source);
+        if (bytes_read){//successfull reading
+            ssize_t bytes_written = tfs_write(dest, buffer, sizeof(buffer));
+            if (bytes_written == -1) {
+                fprintf(stderr, "write error: %s\n", strerror(errno));
+                return -1;
+            }
+
+            memset(buffer, 0, sizeof(buffer));
+        }
+        else{//fread failed
+            if (ferror(source)) {
+                fprintf(stderr, "read error: %s\n", strerror(errno));
+                return -1;
+                break; //don't know if it is necessary
+            }
+            else if (feof(source))
+                break;
+        } 
+    }
+
+    fclose(source);
+    tfs_close(dest);
+    return 0;
+    //PANIC("TODO: tfs_copy_from_external_fs");
 }
