@@ -257,7 +257,7 @@ int tfs_copy_from_external_fs(char const *source_path, char const *dest_path) {
     }
 
     /* open the dest file*/
-    int dest = tfs_open(dest_path, TFS_O_CREAT);
+    int dest = tfs_open(dest_path, TFS_O_CREAT|TFS_O_TRUNC);
     if (dest == -1){// open fail
     fprintf(stderr, "open error: %s\n", strerror(errno));
     return -1;
@@ -271,7 +271,7 @@ int tfs_copy_from_external_fs(char const *source_path, char const *dest_path) {
     while(true){ //Tests if the end-of-file indicator have reached the EOF
         size_t bytes_read = fread(buffer, sizeof(char), sizeof(buffer), source);
         if (bytes_read){//fread success
-            ssize_t bytes_written = tfs_write(dest, buffer, sizeof(buffer));
+            ssize_t bytes_written = tfs_write(dest, buffer, bytes_read);
             if (bytes_written == -1) {
                 fprintf(stderr, "write error: %s\n", strerror(errno));
                 return -1;
