@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <dirent.h>
 
 #include <errno.h>
 
@@ -148,6 +149,7 @@ int tfs_link(char const *target, char const *link_name) {
     (void)link_name;
     // ^ this is a trick to keep the compiler from complaining about unused
     // variables. TODO: remove
+	DIR *opendir(const char *dirpath); //n sei se temos de usar isto??
 
     PANIC("TODO: tfs_link");
 }
@@ -287,13 +289,13 @@ int tfs_copy_from_external_fs(char const *source_path, char const *dest_path) {
             }
             else if (feof(source)) // reached the end of the file (EOF)
                 break;
-        } 
+        }
     }
 
     fclose(source);
     tfs_close(dest);
     return 0;
     //PANIC("TODO: tfs_copy_from_external_fs");
-    /*^ before I removed the line (296) it was not compiling therefore I suppose it must be removed 
+    /*^ before I removed the line (296) it was not compiling therefore I suppose it must be removed
     (I also think that this is what the comment in the beginning of this function suggests )*/
 }
