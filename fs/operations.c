@@ -115,8 +115,8 @@ int tfs_open(char const *name, tfs_file_mode_t mode) {
             return -1; // no space in inode table
         }
 
-        inode_t *new_inode = inode_get(inum);
-        new_inode->number_of_hardlinks = 1;
+        inode_t *new_inode = inode_get(inum); //added
+        new_inode->number_of_hardlinks = 1;  // added
 
         // Add entry in the root directory
         if (add_dir_entry(root_dir_inode, name + 1, inum) == -1) {
@@ -144,6 +144,24 @@ int tfs_sym_link(char const *target, char const *link_name) {
     // ^ this is a trick to keep the compiler from complaining about unused
     // variables. TODO: remove
 
+        inode_t *root_dir_inode = inode_get(ROOT_DIR_INUM); //get the inode of the root directory (only one dir)
+    
+    int target_inumber = tfs_lookup(target, root_dir_inode); //gets the inumber of the target
+    if(target_inumber == -1)
+        return -1;
+
+    int new_inumber = inode_create(T_SYMLINK); //creates a new inode for the hard_link (this opperation returns the inumber of the new inode)
+
+    add_dir_entry(root_dir_inode, link_name + 1, new_inumber); //the +1 is to ignore the initial '/'
+
+    inode_t* new_inode = inode_get(new_inumber);
+
+    int data_number = new_inode->i_data_block;
+
+    strcpy(data_block_get(data_number), target);
+
+    return 0;
+
     PANIC("TODO: tfs_sym_link");
 }
 
@@ -160,19 +178,10 @@ int tfs_link(char const *target, char const *link_name) {
     if(target_inumber == -1)
         return -1;
 
-    int new_inumber = inode_create(T_FILE); //creates a new inode for the hard_link (this opperation returns the inumber of the new inode)
-
-    add_dir_entry(root_dir_inode, link_name + 1, new_inumber); //the +1 is to ignore the initial '/'
+    add_dir_entry(root_dir_inode, link_name++, target_inumber); //the ++ is to ignore the initial '/'
 
     inode_t* target_inode = inode_get(target_inumber);
-    target_inode->number_of_hardlinks++;
-
-    inode_t* new_inode = inode_get(new_inumber);
-
-    new_inode->i_size = target_inode->i_size;
-    new_inode->i_data_block = target_inode->i_data_block; //this do not work
-    new_inode->number_of_hardlinks = target_inode->number_of_hardlinks;
-
+    target_inode->number_of_hardlinks++; //increments the number of hardlinks
 
     return 0;
 
