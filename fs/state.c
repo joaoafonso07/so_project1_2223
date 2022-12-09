@@ -261,7 +261,7 @@ void inode_delete(int inumber) {
     ALWAYS_ASSERT(freeinode_ts[inumber] == TAKEN,
                   "inode_delete: inode already freed");
 
-    if (inode_table[inumber].i_size > 0) {
+    if (inode_table[inumber].i_size > 0) { //need to do something here about hardlinks
         data_block_free(inode_table[inumber].i_data_block);
     }
 
