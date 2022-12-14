@@ -144,13 +144,13 @@ int tfs_sym_link(char const *target, char const *link_name) {
     // ^ this is a trick to keep the compiler from complaining about unused
     // variables. TODO: remove
 
-        inode_t *root_dir_inode = inode_get(ROOT_DIR_INUM); //get the inode of the root directory (only one dir)
+    inode_t *root_dir_inode = inode_get(ROOT_DIR_INUM); //get the inode of the root directory (only one dir)
     
     int target_inumber = tfs_lookup(target, root_dir_inode); //gets the inumber of the target
     if(target_inumber == -1)
         return -1;
 
-    int new_inumber = inode_create(T_SYMLINK); //creates a new inode for the hard_link (this opperation returns the inumber of the new inode)
+    int new_inumber = inode_create(T_SYMLINK); //creates a new inode for the sym_link (this opperation returns the inumber of the new inode)
 
     add_dir_entry(root_dir_inode, link_name + 1, new_inumber); //the +1 is to ignore the initial '/'
 
@@ -162,7 +162,7 @@ int tfs_sym_link(char const *target, char const *link_name) {
 
     return 0;
 
-    PANIC("TODO: tfs_sym_link");
+    //PANIC("TODO: tfs_sym_link");
 }
 
 int tfs_link(char const *target, char const *link_name) {
@@ -178,7 +178,7 @@ int tfs_link(char const *target, char const *link_name) {
     if(target_inumber == -1)
         return -1;
 
-    add_dir_entry(root_dir_inode, link_name++, target_inumber); //the ++ is to ignore the initial '/'
+    add_dir_entry(root_dir_inode, link_name + 1, target_inumber); // + 1 to ignore the "/"
 
     inode_t* target_inode = inode_get(target_inumber);
     target_inode->number_of_hardlinks++; //increments the number of hardlinks
