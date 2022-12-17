@@ -7,7 +7,9 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <pthread.h>
 #include <sys/types.h>
+
 
 /**
  * Directory entry
@@ -30,6 +32,8 @@ typedef struct {
 
     int number_of_hardlinks; //not shure of this yet
     // in a more complete FS, more fields could exist here
+
+	pthread_rwlock_t rwl; //lock for inodes
 } inode_t;
 
 typedef enum { FREE = 0, TAKEN = 1 } allocation_state_t;
@@ -62,5 +66,12 @@ void *data_block_get(int block_number);
 int add_to_open_file_table(int inumber, size_t offset);
 void remove_from_open_file_table(int fhandle);
 open_file_entry_t *get_open_file_entry(int fhandle);
+
+void init_rwl(pthread_rwlock_t *rwl);
+void lock_rd(int *inumbers,int inumber,int *count);
+void lock_rw(int *inumbers,int inumber,int *count);
+void unlock_rwl(pthread_rwlock_t *rwl);
+void destroy_rwl(pthread_rwlock_t *rwl);
+void unlocks(int *inumbers,int *count);
 
 #endif // STATE_H

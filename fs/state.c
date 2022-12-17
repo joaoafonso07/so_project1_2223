@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <pthread.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -531,4 +532,52 @@ open_file_entry_t *get_open_file_entry(int fhandle) {
     }
 
     return &open_file_table[fhandle];
+}
+
+/*Thread functions*/
+void init_rwl(pthread_rwlock_t *rwl){
+    if (pthread_rwlock_init(rwl,NULL)) {
+        fprintf(stderr, "init FAILURE.\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+void lock_rd(int *inumbers,int inumber,int *count){
+   if (inumber < 0 || pthread_rwlock_rdlock(&inode_table[inumber].rwl)){
+            printf("%d",pthread_rwlock_rdlock(&inode_table[inumber].rwl));
+            fprintf(stderr, "read lock FAILURE.\n");
+            exit(EXIT_FAILURE);
+    }
+   inumbers[*count] = inumber;
+   *count += 1;
+}
+
+void lock_rw(int *inumbers,int inumber,int *count){
+    if (inumber < 0 || pthread_rwlock_wrlock(&inode_table[inumber].rwl)){
+            fprintf(stderr, "write lock FAILURE.\n");
+            exit(EXIT_FAILURE);
+    }
+   inumbers[*count] = inumber;
+   *count += 1;
+}
+
+void unlock_rwl(pthread_rwlock_t *rwl){
+   if (pthread_rwlock_unlock(rwl)) {
+        fprintf(stderr, "unlock FAILURE.\n");
+        exit(EXIT_FAILURE);
+   }
+}
+
+void destroy_rwl(pthread_rwlock_t *rwl){
+    if (pthread_rwlock_destroy(rwl)) {
+        fprintf(stderr, "destroy FAILURE.\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+void unlocks(int *inumbers,int *count) {
+    int i;
+    for(i = *count-1; i >= 0; i--) {
+        unlock_rwl(&inode_table[inumbers[i]].rwl);
+    }
 }
