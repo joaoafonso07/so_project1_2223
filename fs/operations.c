@@ -100,6 +100,8 @@ int tfs_open(char const *name, tfs_file_mode_t mode) {
             char target_path[target_path_size];
             strcpy(target_path, block);
             int target_inumber = tfs_lookup(target_path, root_dir_inode);
+            if(target_inumber == -1)
+                return -1;
             inode = inode_get(target_inumber);
             inum = target_inumber;
             ALWAYS_ASSERT(inode != NULL,
@@ -288,10 +290,10 @@ int tfs_unlink(char const *target) {
     // ^ this is a trick to keep the compiler from complaining about unused
     // variables. TODO: remove
 
-    inode_t *root_inode = inode_get(ROOT_DIR_INUM);
-    int target_inumber = tfs_lookup(target, root_inode);
+    inode_t *root_inode = inode_get(ROOT_DIR_INUM); //gets the inode of the root directory
+    int target_inumber = tfs_lookup(target, root_inode); // gets the inumber of the target file
     ALWAYS_ASSERT(target_inumber != -1, "tfs_unlink: target file does not exist in TFS")
-    inode_t *target_inode = inode_get(target_inumber);
+    inode_t *target_inode = inode_get(target_inumber); // gets the inode of the target file
 
     switch (target_inode->i_node_type)
     {
@@ -301,19 +303,16 @@ int tfs_unlink(char const *target) {
         if(target_inode->number_of_hardlinks == 0)
             inode_delete(target_inumber);
         break;
-
     case T_SYMLINK:
         inode_delete(target_inumber);
         break;
     case T_DIRECTORY:
         PANIC("tfs_unlink: it is not possible to delete a directory");
-        break;
     default:
         PANIC("tfs_unlink: unknown file type");
-        break;
     }
 
-    return -1;
+    return 0;
     //PANIC("TODO: tfs_unlink");
 }
 
