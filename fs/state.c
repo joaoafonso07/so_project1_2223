@@ -21,6 +21,12 @@ static tfs_params fs_params;
 static inode_t *inode_table;
 static allocation_state_t *freeinode_ts;
 
+//Locks counter
+int count;
+
+//array with locked inumbers
+static int *lock_inumbers;
+
 // Data blocks
 static char *fs_data; // # blocks * block size
 static allocation_state_t *free_blocks;
@@ -97,12 +103,14 @@ static void insert_delay(void) {
  */
 int state_init(tfs_params params) {
     fs_params = params;
+	count = 0;
 
     if (inode_table != NULL) {
         return -1; // already initialized
     }
 
     inode_table = malloc(INODE_TABLE_SIZE * sizeof(inode_t));
+	lock_inumbers = malloc(INODE_TABLE_SIZE * sizeof(int));
     freeinode_ts = malloc(INODE_TABLE_SIZE * sizeof(allocation_state_t));
     fs_data = malloc(DATA_BLOCKS * BLOCK_SIZE);
     free_blocks = malloc(DATA_BLOCKS * sizeof(allocation_state_t));
@@ -116,6 +124,7 @@ int state_init(tfs_params params) {
     }
 
     for (size_t i = 0; i < INODE_TABLE_SIZE; i++) {
+		init_rwl(&inode_table[i].rwl); //activating all locks
         freeinode_ts[i] = FREE;
     }
 
@@ -136,7 +145,11 @@ int state_init(tfs_params params) {
  * Returns 0 if succesful, -1 otherwise.
  */
 int state_destroy(void) {
+    for (size_t i = 0; i < INODE_TABLE_SIZE; i++) {
+		destroy_rwl(&inode_table[i].rwl); //destroying all locks
+    }
     free(inode_table);
+	free(lock_inumbers);
     free(freeinode_ts);
     free(fs_data);
     free(free_blocks);
@@ -149,6 +162,7 @@ int state_destroy(void) {
     free_blocks = NULL;
     open_file_table = NULL;
     free_open_file_entries = NULL;
+
 
     return 0;
 }
@@ -535,30 +549,29 @@ open_file_entry_t *get_open_file_entry(int fhandle) {
 }
 
 /*Thread functions*/
-void init_rwl(pthread_rwlock_t *rwl){
+void init_rwl(pthread_rwlock_t *rwl){ //usar isto qd criarmos os
     if (pthread_rwlock_init(rwl,NULL)) {
         fprintf(stderr, "init FAILURE.\n");
         exit(EXIT_FAILURE);
     }
 }
 
-void lock_rd(int *inumbers,int inumber,int *count){
+void lock_rd(int inumber){
    if (inumber < 0 || pthread_rwlock_rdlock(&inode_table[inumber].rwl)){
-            printf("%d",pthread_rwlock_rdlock(&inode_table[inumber].rwl));
             fprintf(stderr, "read lock FAILURE.\n");
             exit(EXIT_FAILURE);
     }
-   inumbers[*count] = inumber;
-   *count += 1;
+   lock_inumbers[count] = inumber;
+   count += 1;
 }
 
-void lock_rw(int *inumbers,int inumber,int *count){
+void lock_rw(int inumber){
     if (inumber < 0 || pthread_rwlock_wrlock(&inode_table[inumber].rwl)){
             fprintf(stderr, "write lock FAILURE.\n");
             exit(EXIT_FAILURE);
     }
-   inumbers[*count] = inumber;
-   *count += 1;
+   lock_inumbers[count] = inumber;
+   count += 1;
 }
 
 void unlock_rwl(pthread_rwlock_t *rwl){
@@ -575,9 +588,12 @@ void destroy_rwl(pthread_rwlock_t *rwl){
     }
 }
 
-void unlocks(int *inumbers,int *count) {
+/*All inumber locked will be unlocked*/
+/*When i give many locks*/
+void unlocks() {
     int i;
-    for(i = *count-1; i >= 0; i--) {
-        unlock_rwl(&inode_table[inumbers[i]].rwl);
+    for(i = count-1; i >= 0; i--) {
+        unlock_rwl(&inode_table[lock_inumbers[i]].rwl);
     }
+	count = 0;
 }

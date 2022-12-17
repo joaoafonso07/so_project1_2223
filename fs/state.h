@@ -68,10 +68,10 @@ void remove_from_open_file_table(int fhandle);
 open_file_entry_t *get_open_file_entry(int fhandle);
 
 void init_rwl(pthread_rwlock_t *rwl);
-void lock_rd(int *inumbers,int inumber,int *count);
-void lock_rw(int *inumbers,int inumber,int *count);
+void lock_rd(int inumber);
+void lock_rw(int inumber);
 void unlock_rwl(pthread_rwlock_t *rwl);
 void destroy_rwl(pthread_rwlock_t *rwl);
-void unlocks(int *inumbers,int *count);
+void unlocks();
 
 #endif // STATE_H
