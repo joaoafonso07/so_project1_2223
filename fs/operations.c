@@ -191,10 +191,14 @@ int tfs_link(char const *target, char const *link_name) {
     int target_inumber = tfs_lookup(target, root_dir_inode); //gets the inumber of the target
     if(target_inumber == -1)
         return -1;
+    
+    /*Checks if the target is a soft link*/
+    inode_t *target_inode = inode_get(target_inumber); // gets the inode of the target
+    if(target_inode->i_node_type == T_SYMLINK)
+        return -1;
 
     add_dir_entry(root_dir_inode, link_name + 1, target_inumber); // + 1 to ignore the "/"
 
-    inode_t* target_inode = inode_get(target_inumber);
     target_inode->number_of_hardlinks++; //increments the number of hardlinks
 
     return 0;
@@ -325,6 +329,7 @@ int tfs_copy_from_external_fs(char const *source_path, char const *dest_path) {
     /* open the source file*/
     FILE *source = fopen(source_path, "r");
     if (source == NULL){ // open fail
+        printf("this\n");
         fprintf(stderr, "open error: %s\n", strerror(errno));
         return -1;
     }
@@ -367,6 +372,6 @@ int tfs_copy_from_external_fs(char const *source_path, char const *dest_path) {
     tfs_close(dest);
     return 0;
     //PANIC("TODO: tfs_copy_from_external_fs");
-    /*^ before I removed the line (296) it was not compiling therefore I suppose it must be removed
+    /*^ before I removed the line above it was not compiling therefore I suppose it must be removed
     (I also think that this is what the comment in the beginning of this function suggests )*/
 }
