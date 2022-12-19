@@ -268,7 +268,7 @@ ssize_t tfs_write(int fhandle, void const *buffer, size_t to_write) {
             inode->i_size = file->of_offset;
         }
     }
-	unlocks();
+	unlock_rwl(file->of_inumber);
     return (ssize_t)to_write;
 }
 
@@ -298,7 +298,7 @@ ssize_t tfs_read(int fhandle, void *buffer, size_t len) {
         // The offset associated with the file handle is incremented accordingly
         file->of_offset += to_read;
     }
-	unlocks();
+	unlock_rwl(file->of_inumber);
     return (ssize_t)to_read;
 }
 
