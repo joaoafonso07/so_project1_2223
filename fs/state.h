@@ -33,7 +33,7 @@ typedef struct {
     int number_of_hardlinks; //not shure of this yet
     // in a more complete FS, more fields could exist here
 
-	pthread_rwlock_t rwl; //lock for inodes
+	pthread_rwlock_t rwl; // read-write lock for inodes
 } inode_t;
 
 typedef enum { FREE = 0, TAKEN = 1 } allocation_state_t;
