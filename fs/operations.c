@@ -191,7 +191,7 @@ int tfs_link(char const *target, char const *link_name) {
     (void)link_name;
     // ^ this is a trick to keep the compiler from complaining about unused
     // variables. TODO: remove
-	//DIR *opendir(const char *dirpath); //n sei se temos de usar isto?? afonso : acho que não
+	//DIR *opendir(const char *dirpath); 
 
 	lock_rd(ROOT_DIR_INUM);
     inode_t *root_dir_inode = inode_get(ROOT_DIR_INUM); //get the inode of the root directory (only one dir)
