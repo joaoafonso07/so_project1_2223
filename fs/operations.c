@@ -169,6 +169,9 @@ int tfs_sym_link(char const *target, char const *link_name) {
     if(target_inumber == -1)
         return -1;
 
+    if(tfs_lookup(link_name, root_dir_inode) != -1)
+        return -1;
+
     int new_inumber = inode_create(T_SYMLINK); //creates a new inode for the sym_link (this opperation returns the inumber of the new inode)
 
     add_dir_entry(root_dir_inode, link_name + 1, new_inumber); //the +1 is to ignore the initial '/'
@@ -189,6 +192,9 @@ int tfs_link(char const *target, char const *link_name) {
 
     int target_inumber = tfs_lookup(target, root_dir_inode); //gets the inumber of the target
     if(target_inumber == -1)
+        return -1;
+    
+    if(tfs_lookup(link_name, root_dir_inode) != -1)
         return -1;
 
     /*Checks if the target is a soft link*/
