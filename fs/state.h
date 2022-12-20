@@ -44,6 +44,7 @@ typedef enum { FREE = 0, TAKEN = 1 } allocation_state_t;
 typedef struct {
     int of_inumber;
     size_t of_offset;
+    pthread_mutex_t open_file_entry_mutex;
 } open_file_entry_t;
 
 int state_init(tfs_params);
@@ -68,10 +69,13 @@ void remove_from_open_file_table(int fhandle);
 open_file_entry_t *get_open_file_entry(int fhandle);
 
 void init_rwl(pthread_rwlock_t *rwl);
+void init_mutex(pthread_mutex_t *mutex);
 void lock_rd(int inumber);
 void lock_rw(int inumber);
-void unlock_rwl(pthread_rwlock_t *rwl);
+void lock_mutex(pthread_mutex_t *mutex);
+void unlock_rwl(int inumber);
+void unlock_mutex(pthread_mutex_t *mutex);
 void destroy_rwl(pthread_rwlock_t *rwl);
-void unlocks();
+void destroy_mutex(pthread_mutex_t *mutex);
 
 #endif // STATE_H

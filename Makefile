@@ -23,6 +23,7 @@ vpath # clears VPATH
 vpath %.h $(INCLUDE_DIRS)
 
 CFLAGS += -std=c17 -D_POSIX_C_SOURCE=200809L -pthread
+CFLAGS += -fsanitize=thread
 CFLAGS += $(INCLUDES)
 
 # Warnings
