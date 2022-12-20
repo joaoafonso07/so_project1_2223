@@ -470,6 +470,7 @@ int find_in_dir(inode_t const *inode, char const *sub_name) {
  *   - No free data blocks.
  */
 int data_block_alloc(void) {
+    lock_mutex(&fs_data_mutex);
     for (size_t i = 0; i < DATA_BLOCKS; i++) {
         if (i * sizeof(allocation_state_t) % BLOCK_SIZE == 0) {
             insert_delay(); // simulate storage access delay to free_blocks
@@ -477,9 +478,11 @@ int data_block_alloc(void) {
 
         if (free_blocks[i] == FREE) {
             free_blocks[i] = TAKEN;
+            unlock_mutex(&fs_data_mutex);
             return (int)i;
         }
     }
+    unlock_mutex(&fs_data_mutex);
     return -1;
 }
 
@@ -490,12 +493,14 @@ int data_block_alloc(void) {
  *   - block_number: the block number/index
  */
 void data_block_free(int block_number) {
+    lock_mutex(&fs_data_mutex);
     ALWAYS_ASSERT(valid_block_number(block_number),
                   "data_block_free: invalid block number");
 
     insert_delay(); // simulate storage access delay to free_blocks
 
     free_blocks[block_number] = FREE;
+    unlock_mutex(&fs_data_mutex);
 }
 
 /**
@@ -507,11 +512,14 @@ void data_block_free(int block_number) {
  * Returns a pointer to the first byte of the block.
  */
 void *data_block_get(int block_number) {
+    lock_mutex(&fs_data_mutex);
     ALWAYS_ASSERT(valid_block_number(block_number),
                   "data_block_get: invalid block number");
 
     insert_delay(); // simulate storage access delay to block
+    unlock_mutex(&fs_data_mutex);
     return &fs_data[(size_t)block_number * BLOCK_SIZE];
+    
 }
 
 /**
@@ -571,10 +579,12 @@ void remove_from_open_file_table(int fhandle) {
 open_file_entry_t *get_open_file_entry(int fhandle) {
     lock_mutex(&open_file_table_mutex);
     if (!valid_file_handle(fhandle)) {
+        unlock_mutex(&open_file_table_mutex);
         return NULL;
     }
 
     if (free_open_file_entries[fhandle] != TAKEN) {
+        unlock_mutex(&open_file_table_mutex);
         return NULL;
     }
 

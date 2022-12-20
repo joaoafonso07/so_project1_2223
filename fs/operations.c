@@ -224,7 +224,7 @@ ssize_t tfs_write(int fhandle, void const *buffer, size_t to_write) {
     }
 
     //  From the open file table entry, we get the inode
-	//lock_rw(file->of_inumber);
+	lock_rw(file->of_inumber);
     inode_t *inode = inode_get(file->of_inumber);
     ALWAYS_ASSERT(inode != NULL, "tfs_write: inode of open file deleted");
 
@@ -239,7 +239,7 @@ ssize_t tfs_write(int fhandle, void const *buffer, size_t to_write) {
             // If empty file, allocate new block
             int bnum = data_block_alloc();
             if (bnum == -1) {
-				//unlock_rwl(file->of_inumber);
+				unlock_rwl(file->of_inumber);
                 return -1; // no space
             }
 
@@ -258,7 +258,7 @@ ssize_t tfs_write(int fhandle, void const *buffer, size_t to_write) {
             inode->i_size = file->of_offset;
         }
     }
-	//unlock_rwl(file->of_inumber);
+	unlock_rwl(file->of_inumber);
     return (ssize_t)to_write;
 }
 
@@ -272,7 +272,7 @@ ssize_t tfs_read(int fhandle, void *buffer, size_t len) {
     }
 
     // From the open file table entry, we get the inode
-	//lock_rd(file->of_inumber);
+	lock_rd(file->of_inumber);
     inode_t const *inode = inode_get(file->of_inumber);
     ALWAYS_ASSERT(inode != NULL, "tfs_read: inode of open file deleted");
 
@@ -292,7 +292,7 @@ ssize_t tfs_read(int fhandle, void *buffer, size_t len) {
         file->of_offset += to_read;
     }
     unlock_mutex(&file->open_file_entry_mutex);
-	//unlock_rwl(file->of_inumber);
+	unlock_rwl(file->of_inumber);
     return (ssize_t)to_read;
 }
 

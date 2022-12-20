@@ -17,8 +17,15 @@ uint8_t const file_contents1[] =
         "BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! "
         "BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! "
         "BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! "
-        "BBB! BBB! BBB! BBB! BBB! ";
-uint8_t const file_contents2[] = "BBB";
+        "BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! "
+        "BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! "
+        "BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! "
+        "BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! "
+        "BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! "
+        "BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! "
+        "BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB! "
+        "BBB! BBB! BBB! BBB! BBB! BBB! BBB! BBB!";
+uint8_t const file_contents2[] = "A";
 char const path1[] = "/f1";
 int checker = 0;
 
@@ -52,8 +59,7 @@ void* thread03(void *p){
 
     uint8_t buffer[sizeof(file_contents1)];
     assert(tfs_read(f, buffer, sizeof(buffer)) == sizeof(file_contents1) || tfs_read(f, buffer, sizeof(buffer)) == sizeof(file_contents2));
-	printf("this : %s\n", buffer);
-    //assert(memcmp(buffer, file_contents2, sizeof(buffer)) == 0 || memcmp(buffer, file_contents1, sizeof(buffer)) == 0);
+	
 
     assert(tfs_close(f) != -1);
 
@@ -99,7 +105,7 @@ int main(){
         
     }
     assert(tfs_destroy() != -1);
-    printf("Successful test.\n");
+    printf("Successful test if no ThreadSanitizer warnings.\n");
 	
 	return 0;
 }
